@@ -31,9 +31,16 @@ outputs:
     description: 'Content-type for Upload'
 
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-
+  using: "composite"
+  steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    - name: Build Dockerfile
+      run: |
+        docker build . --tag=mockbuilder:latest
+    - name: Run Container
+      run: |
+        docker run mockbuilder:latest -v ${{ github.workspace }}:/github/workspace --privileged
 branding:
   icon: 'package'
   color: 'red'
