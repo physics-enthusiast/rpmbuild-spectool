@@ -37,7 +37,7 @@ runs:
     - name: Build Dockerfile
       shell: bash
       run: |
-        docker build ${{ env.ACTION_REPO }}.git#${{ env.ACTION_REF }} --tag=mockbuilder:latest
+        docker build https://github.com/${{ env.ACTION_REPO }}.git#${{ env.ACTION_REF }} --tag=mockbuilder:latest
       env:
         ACTION_REF: ${{ github.action_ref }}
         ACTION_REPO: ${{ github.action_repository }}
