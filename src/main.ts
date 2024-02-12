@@ -1,5 +1,4 @@
 const core = require('@actions/core');
-const github = require('@actions/github');
 const exec = require('@actions/exec');
 const io = require('@actions/io');
 const cp = require('child_process');
@@ -8,15 +7,6 @@ const path = require('path');
 
 async function run() {
   try {
-
-    // Get github context data
-    const context = github.context;
-
-    // To be used to get contents of this git ref 
-    const owner = context.repo.owner
-    const repo = context.repo.repo
-    const ref = context.ref
-
     // get inputs from workflow
     // specFile name
     const configPath = core.getInput('spec_file'); // user input, eg: `foo.spec' or `rpm/foo.spec'
