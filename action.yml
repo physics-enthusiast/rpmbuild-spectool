@@ -35,10 +35,14 @@ runs:
   steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+      with:
+        repository: physics-enthusiast/rpmbuild-spectool
+        path: rpmbuild-spectool
+        ref: ${{ github.action_ref }}
     - name: Build Dockerfile
       shell: bash
       run: |
-        docker build . --tag=mockbuilder:latest
+        docker build ./rpmbuild-spectool --tag=mockbuilder:latest
     - name: Run Container
       shell: bash
       run: |
