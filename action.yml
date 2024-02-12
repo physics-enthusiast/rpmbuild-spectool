@@ -48,7 +48,7 @@ runs:
     - name: Run Container
       shell: bash
       run: |
-        docker run -v ${{ github.workspace }}:/github/workspace --privileged -e INPUT_SPEC_FILE=${{ inputs.spec_file }} -e INPUT_TARGET=${{ inputs.target }} -e INPUT_ADDITIONAL_REPOS=${{ inputs.additional_repos }} mockbuilder:latest
+        docker run -v ${{ github.workspace }}:/github/workspace -w /github/home/ -e INPUT_SPEC_FILE=${{ inputs.spec_file }} -e INPUT_TARGET=${{ inputs.target }} -e INPUT_ADDITIONAL_REPOS=${{ inputs.additional_repos }} --privileged mockbuilder:latest
 branding:
   icon: 'package'
   color: 'red'
