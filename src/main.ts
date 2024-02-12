@@ -99,44 +99,16 @@ async function run() {
     // Verify RPM is created
     await exec.exec(`ls ${buildpath}/RPMS`);
 
-    // Get rpm name , to provide file name, path as output
-    let rpmOutput = '';
-    const rpm_fetcher = cp.exec(`find -L "${buildpath}/RPMS" -type f -name '*.rpm' -printf "%f\n" | head -n 1`, (err, stdout, stderr) => {
-      if (err) {
-        //some err occurred
-        console.error(err)
-      } else {
-          // the *entire* stdout and stderr (bffered)
-          console.log(`stdout: ${stdout}`);
-          rpmOutput = rpmOutput+`${stdout}`.trim();
-          console.log(`stderr: ${stderr}`);
-        }
-      });
-    await new Promise( (resolve) => {
-        rpm_fetcher.on('close', resolve)
-    })
-
     // only contents of workspace can be changed by actions and used by subsequent actions 
     // So copy all generated rpms into workspace , and publish output path relative to workspace (/github/workspace)
     await exec.exec(`mkdir -p rpmbuild/SRPMS`);
     await exec.exec(`mkdir -p rpmbuild/RPMS`);
 
     await exec.exec(`cp ${buildpath}/SRPMS/${srpmOutput} rpmbuild/SRPMS`);
-    await cp.exec(`cp -R ${buildpath}/RPMS/. rpmbuild/RPMS/`);
+    await exec.exec(`cp -R ${buildpath}/RPMS/. rpmbuild/RPMS/`);
 
     await exec.exec(`ls -la rpmbuild/SRPMS`);
     await exec.exec(`ls -la rpmbuild/RPMS`);
-    
-    // set outputs to path relative to workspace ex ./rpmbuild/
-    core.setOutput("source_rpm_dir_path", `rpmbuild/SRPMS/`);              // path to  SRPMS directory
-    core.setOutput("source_rpm_path", `rpmbuild/SRPMS/${srpmOutput}`);       // path to Source RPM file
-    core.setOutput("source_rpm_name", `${srpmOutput}`);                      // name of Source RPM file
-    core.setOutput("rpm_dir_path", `rpmbuild/RPMS/`);                      // path to RPMS directory
-    core.setOutput("rpm_path", `rpmbuild/RPMS/${rpmOutput}`);       // path to RPM file
-    core.setOutput("rpm_name", `${rpmOutput}`);                      // name of RPM file
-    core.setOutput("rpm_content_type", "application/octet-stream");        // Content-type for Upload
-    
-
 
   } catch (error) {
     core.setFailed(error.message);
