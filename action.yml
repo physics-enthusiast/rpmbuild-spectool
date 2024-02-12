@@ -6,7 +6,10 @@ inputs:
   spec_file:
     description: 'path to the spec file'
     required: true
-    default: '*.spec'                     #Any spec file in top 
+    default: '*.spec'                     #Any spec file in top
+  target:
+    description: 'mock configname'
+    required: true
   additional_repos:
     description: 'A list of additional repositories to enable'
     required: false
@@ -18,8 +21,12 @@ outputs:
     description: 'path to  SRPMS directory'
   source_rpm_name:
     description: 'name of Source RPM file'
+  rpm_path:
+    description: 'path to RPM file'
   rpm_dir_path:
     description: 'path to RPMS directory'
+  rpm_name:
+    description: 'name of RPM file'
   rpm_content_type:
     description: 'Content-type for Upload'
 
