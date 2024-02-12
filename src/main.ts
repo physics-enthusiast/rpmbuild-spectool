@@ -14,7 +14,7 @@ async function run() {
     const target = core.getInput('target');
     const basename = path.basename(configPath); // always just `foo.spec`
     const userHomeDir = os.homedir();
-    const buildpath = '${userHomeDir}/rpmbuild'
+    const buildpath = `${userHomeDir}/rpmbuild`
     const specFile = {
       srcFullPath: `/github/workspace/${configPath}`,
       destFullPath: `${buildpath}/SPECS/${basename}`,
@@ -68,11 +68,11 @@ async function run() {
     }
 
     // Verify SRPM is created
-    await exec.exec('ls ${buildpath}/SRPMS');
+    await exec.exec(`ls ${buildpath}/SRPMS`);
 
     // Get source rpm name , to provide file name, path as output
     let srpmOutput = '';
-    await cp.exec('ls ${buildpath}/SRPMS/*.src.rpm', (err, stdout, stderr) => {
+    await cp.exec(`ls ${buildpath}/SRPMS/*.src.rpm`, (err, stdout, stderr) => {
       if (err) {
         //some err occurred
         console.error(err)
@@ -94,11 +94,11 @@ async function run() {
     }
 	  
     // Verify RPM is created
-    await exec.exec('ls ${buildpath}/RPMS');
+    await exec.exec(`ls ${buildpath}/RPMS`);
 
     // Get rpm name , to provide file name, path as output
     let rpmOutput = '';
-    await cp.exec('ls ${buildpath}/RPMS/*.rpm', (err, stdout, stderr) => {
+    await cp.exec(`ls ${buildpath}/RPMS/*.rpm`, (err, stdout, stderr) => {
       if (err) {
         //some err occurred
         console.error(err)
