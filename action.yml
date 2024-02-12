@@ -48,7 +48,7 @@ runs:
     - name: Run Container
       shell: bash
       run: |
-        docker run mockbuilder:latest -v ${{ github.workspace }}:/github/workspace --privileged
+        docker run -v ${{ github.workspace }}:/github/workspace --privileged mockbuilder:latest
 branding:
   icon: 'package'
   color: 'red'
