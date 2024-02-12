@@ -17,18 +17,19 @@ inputs:
 outputs:
   source_rpm_path:
     description: 'path to Source RPM file'
+    value: ${{ steps.write_outputs.outputs.source_rpm_path }}
   source_rpm_dir_path:
     description: 'path to  SRPMS directory'
+    value: "rpmbuild/SRPMS/"
   source_rpm_name:
     description: 'name of Source RPM file'
-  rpm_path:
-    description: 'path to RPM file'
+    value: ${{ steps.write_outputs.outputs.source_rpm_name }}
   rpm_dir_path:
     description: 'path to RPMS directory'
-  rpm_name:
-    description: 'name of RPM file'
+    value: "rpmbuild/RPMS/"
   rpm_content_type:
     description: 'Content-type for Upload'
+    value: "application/octet-stream"
 
 runs:
   using: "composite"
@@ -48,7 +49,14 @@ runs:
     - name: Run Container
       shell: bash
       run: |
-        docker run -v ${{ github.workspace }}:/github/workspace -w /github/home/ -e INPUT_SPEC_FILE=${{ inputs.spec_file }} -e INPUT_TARGET=${{ inputs.target }} -e INPUT_ADDITIONAL_REPOS=${{ inputs.additional_repos }} --privileged mockbuilder:latest
+        docker run -v ${{ github.workspace }}:/github/workspace -w /github/workspace/ -e INPUT_SPEC_FILE=${{ inputs.spec_file }} -e INPUT_TARGET=${{ inputs.target }} -e INPUT_ADDITIONAL_REPOS=${{ inputs.additional_repos }} --privileged mockbuilder:latest
+    - name: Set Outputs
+      shell: bash
+      id: write_outputs
+      run: |
+        echo "source_rpm_path=$(find -L "rpmbuild/SRPMS" -type f -name '*.src.rpm' | head -n 1)" >> $GITHUB_OUTPUT
+        echo "source_rpm_name=$(find -L "rpmbuild/SRPMS" -type f -name '*.src.rpm' -printf "%f\n" | head -n 1)" >> $GITHUB_OUTPUT
+      
 branding:
   icon: 'package'
   color: 'red'
