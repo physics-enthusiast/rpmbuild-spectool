@@ -36,9 +36,11 @@ runs:
     - name: Checkout Repository
       uses: actions/checkout@v4
     - name: Build Dockerfile
+      shell: bash
       run: |
         docker build . --tag=mockbuilder:latest
     - name: Run Container
+      shell: bash
       run: |
         docker run mockbuilder:latest -v ${{ github.workspace }}:/github/workspace --privileged
 branding:
