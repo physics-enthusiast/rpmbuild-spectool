@@ -72,7 +72,7 @@ async function run() {
 
     // Get source rpm name , to provide file name, path as output
     let srpmOutput = '';
-    await cp.exec(`ls ${buildpath}/SRPMS/*.src.rpm`, (err, stdout, stderr) => {
+    const srpm_fetcher = cp.exec(`ls ${buildpath}/SRPMS/*.src.rpm`, (err, stdout, stderr) => {
       if (err) {
         //some err occurred
         console.error(err)
@@ -83,6 +83,9 @@ async function run() {
           console.log(`stderr: ${stderr}`);
         }
       });
+    await new Promise( (resolve) => {
+        srpm_fetcher.on('close', resolve)
+    })
 
     // Generate PRM
     try {
@@ -98,7 +101,7 @@ async function run() {
 
     // Get rpm name , to provide file name, path as output
     let rpmOutput = '';
-    await cp.exec(`ls ${buildpath}/RPMS/*.rpm`, (err, stdout, stderr) => {
+    const rpm_fetcher = cp.exec(`ls ${buildpath}/RPMS/*.rpm`, (err, stdout, stderr) => {
       if (err) {
         //some err occurred
         console.error(err)
@@ -109,7 +112,10 @@ async function run() {
           console.log(`stderr: ${stderr}`);
         }
       });
-	  
+    await new Promise( (resolve) => {
+        rpm_fetcher.on('close', resolve)
+    })
+
     // only contents of workspace can be changed by actions and used by subsequent actions 
     // So copy all generated rpms into workspace , and publish output path relative to workspace (/github/workspace)
     await exec.exec(`mkdir -p rpmbuild/SRPMS`);
