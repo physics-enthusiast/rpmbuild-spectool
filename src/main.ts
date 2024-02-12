@@ -61,7 +61,7 @@ async function run() {
     // Generate SPRM
     try {
       await exec.exec(
-        `mock buildsrpm -r ${target} --spec=${specFile.destFullPath} --sources=${buildpath}/SOURCES/ --resultdir=${buildpath}/SRPMS/ ${repoString}`
+        `mock -r ${target} --spec=${specFile.destFullPath} --sources=${buildpath}/SOURCES/ --resultdir=${buildpath}/SRPMS/ ${repoString} --buildsrpm`
       );
     } catch (err) {
       core.setFailed(`action failed with error: ${err}`);
@@ -90,7 +90,7 @@ async function run() {
     // Generate PRM
     try {
       await exec.exec(
-        `mock rebuild ${buildpath}/SRPMS/${srpmOutput} -r ${target} --resultdir=${buildpath}/RPMS/ ${repoString}`
+        `mock -r ${target} --resultdir=${buildpath}/RPMS/ ${repoString} --rebuild ${buildpath}/SRPMS/${srpmOutput}`
       );
     } catch (err) {
       core.setFailed(`action failed with error: ${err}`);
