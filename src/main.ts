@@ -72,7 +72,7 @@ async function run() {
 
     // Get source rpm name , to provide file name, path as output
     let srpmOutput = '';
-    const srpm_fetcher = cp.exec(`ls ${buildpath}/SRPMS/*.src.rpm`, (err, stdout, stderr) => {
+    const srpm_fetcher = cp.exec(`find -L "${buildpath}/SRPMS" -type f -name '*.src.rpm' | head -n 1`, (err, stdout, stderr) => {
       if (err) {
         //some err occurred
         console.error(err)
@@ -101,7 +101,7 @@ async function run() {
 
     // Get rpm name , to provide file name, path as output
     let rpmOutput = '';
-    const rpm_fetcher = cp.exec(`ls ${buildpath}/RPMS/*.rpm`, (err, stdout, stderr) => {
+    const rpm_fetcher = cp.exec(`find -L "${buildpath}/RPMS" -type f -name '*.rpm | head -n 1`, (err, stdout, stderr) => {
       if (err) {
         //some err occurred
         console.error(err)
