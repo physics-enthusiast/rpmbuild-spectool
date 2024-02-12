@@ -101,7 +101,7 @@ async function run() {
 
     // Get rpm name , to provide file name, path as output
     let rpmOutput = '';
-    const rpm_fetcher = cp.exec(`find -L "${buildpath}/RPMS" -type f -name '*.rpm -printf "%f\n" | head -n 1`, (err, stdout, stderr) => {
+    const rpm_fetcher = cp.exec(`find -L "${buildpath}/RPMS" -type f -name '*.rpm' -printf "%f\n" | head -n 1`, (err, stdout, stderr) => {
       if (err) {
         //some err occurred
         console.error(err)
