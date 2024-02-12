@@ -20,10 +20,12 @@ async function run() {
     // get inputs from workflow
     // specFile name
     const configPath = core.getInput('spec_file'); // user input, eg: `foo.spec' or `rpm/foo.spec'
+    const target = core.getInput('target');
     const basename = path.basename(configPath); // always just `foo.spec`
+    const buildpath = '/github/home/rpmbuild'
     const specFile = {
       srcFullPath: `/github/workspace/${configPath}`,
-      destFullPath: `/github/home/rpmbuild/SPECS/${basename}`,
+      destFullPath: `${buildpath}/SPECS/${basename}`,
     };
 
     // Read spec file and get values 
@@ -52,65 +54,88 @@ async function run() {
     // Autodownload sources
     await exec.exec(`spectool -g -R ${specFile.destFullPath}`);
 
+    let repoString = '';
     // Installs additional repositories
     const additionalRepos = core.getInput('additional_repos'); // user input, eg: '["centos-release-scl"]'
 	if (additionalRepos) {
 		const arr = JSON.parse(additionalRepos);
 		for (let i = 0; i < arr.length; i++) {
 			console.log(`Installing repo': ${arr[i]}`);
-    		await exec.exec(`yum install -y ${arr[i]}`);
+    		        repoString = repoString +`--addrepo=${arr[i]} `;
 		};
 	}
+    repoString = repoString.trim()
 
-	// Installs build dependencies
-    await exec.exec(`yum-builddep -y ${specFile.destFullPath}`);
-
-    // Execute rpmbuild , -ba generates both RPMS and SPRMS
+    // Generate SPRM
     try {
       await exec.exec(
-        `rpmbuild -ba ${specFile.destFullPath}`
+        `mock buildsrpm -r ${target} --spec=${specFile.destFullPath} --sources=${buildpath}/SOURCES/ --resultdir=${buildpath}/SRPMS/ ${repoString}`
       );
     } catch (err) {
       core.setFailed(`action failed with error: ${err}`);
     }
 
-    // Verify RPM is created
-    await exec.exec('ls /github/home/rpmbuild/RPMS');
-
-    // setOutput rpm_path to /root/rpmbuild/RPMS , to be consumed by other actions like 
-    // actions/upload-release-asset 
+    // Verify SRPM is created
+    await exec.exec('ls ${buildpath}/SRPMS');
 
     // Get source rpm name , to provide file name, path as output
-    let myOutput = '';
-    await cp.exec('ls /github/home/rpmbuild/SRPMS/', (err, stdout, stderr) => {
+    let srpmOutput = '';
+    await cp.exec('ls ${buildpath}/SRPMS/*.src.rpm', (err, stdout, stderr) => {
       if (err) {
         //some err occurred
         console.error(err)
       } else {
-          // the *entire* stdout and stderr (buffered)
+          // the *entire* stdout and stderr (bffered)
           console.log(`stdout: ${stdout}`);
-          myOutput = myOutput+`${stdout}`.trim();
+          srpmOutput = srpmOutput+`${stdout}`.trim();
           console.log(`stderr: ${stderr}`);
         }
       });
 
+    // Generate PRM
+    try {
+      await exec.exec(
+        `mock rebuild ${buildpath}/SRPMS/${srpmOutput} -r ${target} --resultdir=${buildpath}/RPMS/ ${repoString}`
+      );
+    } catch (err) {
+      core.setFailed(`action failed with error: ${err}`);
+    }
+	  
+    // Verify RPM is created
+    await exec.exec('ls ${buildpath}/RPMS');
 
+    // Get rpm name , to provide file name, path as output
+    let rpmOutput = '';
+    await cp.exec('ls ${buildpath}/RPMS/*.rpm', (err, stdout, stderr) => {
+      if (err) {
+        //some err occurred
+        console.error(err)
+      } else {
+          // the *entire* stdout and stderr (bffered)
+          console.log(`stdout: ${stdout}`);
+          rpmOutput = rpmOutput+`${stdout}`.trim();
+          console.log(`stderr: ${stderr}`);
+        }
+      });
+	  
     // only contents of workspace can be changed by actions and used by subsequent actions 
     // So copy all generated rpms into workspace , and publish output path relative to workspace (/github/workspace)
     await exec.exec(`mkdir -p rpmbuild/SRPMS`);
     await exec.exec(`mkdir -p rpmbuild/RPMS`);
 
-    await exec.exec(`cp /github/home/rpmbuild/SRPMS/${myOutput} rpmbuild/SRPMS`);
-    await cp.exec(`cp -R /github/home/rpmbuild/RPMS/. rpmbuild/RPMS/`);
+    await exec.exec(`cp ${buildpath}/SRPMS/${srpmOutput} rpmbuild/SRPMS`);
+    await cp.exec(`cp -R ${buildpath}/RPMS/. rpmbuild/RPMS/`);
 
     await exec.exec(`ls -la rpmbuild/SRPMS`);
     await exec.exec(`ls -la rpmbuild/RPMS`);
     
     // set outputs to path relative to workspace ex ./rpmbuild/
     core.setOutput("source_rpm_dir_path", `rpmbuild/SRPMS/`);              // path to  SRPMS directory
-    core.setOutput("source_rpm_path", `rpmbuild/SRPMS/${myOutput}`);       // path to Source RPM file
-    core.setOutput("source_rpm_name", `${myOutput}`);                      // name of Source RPM file
+    core.setOutput("source_rpm_path", `rpmbuild/SRPMS/${srpmOutput}`);       // path to Source RPM file
+    core.setOutput("source_rpm_name", `${srpmOutput}`);                      // name of Source RPM file
     core.setOutput("rpm_dir_path", `rpmbuild/RPMS/`);                      // path to RPMS directory
+    core.setOutput("rpm_path", `rpmbuild/RPMS/${rpmOutput}`);       // path to RPM file
+    core.setOutput("rpm_name", `${rpmOutput}`);                      // name of RPM file
     core.setOutput("rpm_content_type", "application/octet-stream");        // Content-type for Upload
     
 
