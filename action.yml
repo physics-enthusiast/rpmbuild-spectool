@@ -38,7 +38,9 @@ runs:
       with:
         repository: physics-enthusiast/rpmbuild-spectool
         path: rpmbuild-spectool
-        ref: ${{ github.action_ref }}
+        ref: ${{ env.ACTION_REF }}
+      env:
+        ACTION_REF: ${{ github.action_ref }}
     - name: Build Dockerfile
       shell: bash
       run: |
