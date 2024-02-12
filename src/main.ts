@@ -4,6 +4,7 @@ const io = require('@actions/io');
 const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const os = require("os");
 
 async function run() {
   try {
@@ -12,7 +13,8 @@ async function run() {
     const configPath = core.getInput('spec_file'); // user input, eg: `foo.spec' or `rpm/foo.spec'
     const target = core.getInput('target');
     const basename = path.basename(configPath); // always just `foo.spec`
-    const buildpath = '/github/home/rpmbuild'
+    const userHomeDir = os.homedir();
+    const buildpath = '${userHomeDir}/rpmbuild'
     const specFile = {
       srcFullPath: `/github/workspace/${configPath}`,
       destFullPath: `${buildpath}/SPECS/${basename}`,
@@ -38,7 +40,7 @@ async function run() {
     // setup rpm tree
     await exec.exec('rpmdev-setuptree');
 
-    // Copy spec file from path specFile to /github/home/rpmbuild/SPECS/
+    // Copy spec file from path specFile to the build directory
     await exec.exec(`cp ${specFile.srcFullPath} ${specFile.destFullPath}`);
 
     // Autodownload sources
